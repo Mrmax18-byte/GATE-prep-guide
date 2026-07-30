@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE DA & CS Preparation Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for rendering math equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        .correct { background-color: #d1fae5; border-color: #10b981; color: #065f46; }
+        .incorrect { background-color: #fee2e2; border-color: #ef4444; color: #991b1b; }
+        .option-btn:hover:not(:disabled) { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans h-screen flex flex-col">
+
+    <header class="bg-blue-800 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">GATE DA 2027 Interactive Prep</h1>
+            <p class="text-sm">Expanded with CS/IT Previous Year Questions</p>
+        </div>
+    </header>
+
+    <div class="container mx-auto flex-1 flex flex-col md:flex-row mt-4 px-4 pb-4 gap-4 overflow-hidden">
+        
+        <!-- Sidebar for Topics -->
+        <aside class="w-full md:w-1/4 bg-white rounded-lg shadow-md p-4 flex flex-col h-full overflow-y-auto">
+            <h2 class="text-lg font-semibold mb-4 border-b pb-2">Syllabus Topics</h2>
+
+                        <div class="mb-4 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                                <h3 class="text-sm font-semibold text-blue-800 mb-2">Add Question Manually</h3>
+                                <label class="text-xs text-gray-600">Topic</label>
+                                <select id="manual-topic" class="block w-full mt-1 mb-2 rounded-md border px-2 py-1 text-sm"></select>
+
+                                <label class="text-xs text-gray-600">Question</label>
+                                <textarea id="manual-question" rows="3" class="block w-full mt-1 mb-2 rounded-md border px-2 py-1 text-sm" placeholder="Type the question statement here"></textarea>
+
+                                <label class="text-xs text-gray-600">Year / Source (optional)</label>
+                                <input id="manual-year" type="text" class="block w-full mt-1 mb-2 rounded-md border px-2 py-1 text-sm" placeholder="e.g., GATE 2019 or Practice" />
+
+                                <label class="text-xs text-gray-600">Options (A-D) — leave blank to auto-generate</label>
+                                <input id="opt-A" type="text" class="block w-full mt-1 mb-1 rounded-md border px-2 py-1 text-sm" placeholder="Option A" />
+                                <input id="opt-B" type="text" class="block w-full mt-1 mb-1 rounded-md border px-2 py-1 text-sm" placeholder="Option B" />
+                                <input id="opt-C" type="text" class="block w-full mt-1 mb-1 rounded-md border px-2 py-1 text-sm" placeholder="Option C" />
+                                <input id="opt-D" type="text" class="block w-full mt-1 mb-2 rounded-md border px-2 py-1 text-sm" placeholder="Option D" />
+
+                                <div class="flex gap-2">
+                                    <select id="manual-correct" class="rounded-md border px-2 py-1 text-sm">
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                        <option value="D">D</option>
+                                    </select>
+                                    <button id="analyze-btn" class="ml-auto rounded-md bg-yellow-500 px-3 py-1 text-sm text-white">Analyze & Explain</button>
+                                </div>
+
+                                <button id="add-question-btn" class="mt-2 w-full rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">Add Question</button>
+                                <p id="manual-status" class="mt-2 text-xs text-gray-500">Add questions manually and get a generated explanation.</p>
+                        </div>
+
+            <ul id="topic-list" class="space-y-2">
+                <!-- Topics injected via JS -->
+            </ul>
+        </aside>
+
+        <!-- Main Quiz Area -->
+        <main class="w-full md:w-3/4 bg-white rounded-lg shadow-md p-6 flex flex-col h-full overflow-y-auto">
+            <div id="welcome-screen" class="text-center mt-10">
+                <h2 class="text-3xl font-bold text-gray-700 mb-4">Welcome to your GATE Prep!</h2>
+                <p class="text-gray-500">Select a topic from the left sidebar to start practicing.</p>
+            </div>
+
+            <div id="quiz-container" class="hidden flex-col h-full">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="current-topic-title" class="text-xl font-bold text-blue-700">Topic Name</h3>
+                    <span id="question-counter" class="text-sm font-semibold bg-blue-100 text-blue-800 py-1 px-3 rounded-full">Q 1 / 10</span>
+                </div>
+
+                <div class="mb-4">
+                    <span id="year-badge" class="inline-block bg-purple-100 text-purple-800 text-xs px-2 rounded-full mb-2 font-semibold">GATE Year</span>
+                    <p id="question-text" class="text-lg mb-6"></p>
+                </div>
+
+                <div id="options-container" class="space-y-3 mb-6">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <div id="feedback-container" class="hidden p-4 rounded-md border mb-6">
+                    <h4 id="feedback-title" class="font-bold mb-2"></h4>
+                    <p id="explanation-text" class="text-sm"></p>
+                </div>
+
+                <div class="mt-auto flex justify-between">
+                    <button id="prev-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 disabled:opacity-50" disabled>Previous</button>
+                    <button id="next-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">Next</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // EXPANDED QUESTION DATABASE
+        const defaultQuestionDB = {
+            "Probability and Statistics": [
+                {
+                    year: "GATE DA 2024",
+                    question: "The probability of a boy or a girl being born is 1/2. For a family having only three children, what is the probability of having two girls and one boy?",
+                    options: { "A": "3/8", "B": "1/8", "C": "1/4", "D": "1/2" },
+                    answer: "A",
+                    explanation: "The number of combinations to have 2 girls and 1 boy out of 3 children is $$\\binom{3}{2} = 3$$. The probability of each specific sequence is $$(1/2)^3 = 1/8$$. Therefore, $$3 \\times (1/8) = 3/8$$."
+                }
+            ],
+            "Linear Algebra": [
+                {
+                    year: "GATE CS 2026",
+                    question: "The determinant of a 4x4 matrix A is 3. What is the value of the determinant of 2A?",
+                    options: { "A": "24", "B": "48", "C": "12", "D": "81" },
+                    answer: "B",
+                    explanation: "For an $$n \\times n$$ matrix, the property of determinants states that $$\\det(cA) = c^n \\det(A)$$. Here, $$n = 4$$, $$c = 2$$, and $$\\det(A) = 3$$. So, $$\\det(2A) = 2^4 \\times 3 = 16 \\times 3 = 48$$."
+                },
+                {
+                    year: "GATE CS 2026",
+                    question: "Consider the system of linear equations: $$ax + y = b$$ and $$16x + ay = 24$$. Suppose the values of a and b are chosen such that the system produces infinitely many (multiple) solutions. What is the product of a and b?",
+                    options: { "A": "16", "B": "24", "C": "48", "D": "-24" },
+                    answer: "B",
+                    explanation: "For infinitely many solutions, the ratio of coefficients must be equal: $$\\frac{a}{16} = \\frac{1}{a} = \\frac{b}{24}$$. From the first part, $$a^2 = 16$$, so $$a = \\pm 4$$. If $$a = 4$$, $$b = 6$$, and $$ab = 24$$. If $$a = -4$$, $$b = -6$$, and $$ab = 24$$. The product is always 24."
+                },
+                {
+                    year: "GATE DA 2024",
+                    question: "Consider the matrix M = [[2, -1], [3, 1]]. Which ONE of the following statements is TRUE?",
+                    options: {
+                        "A": "The eigenvalues of M are non-negative and real.",
+                        "B": "The eigenvalues of M are complex conjugate pairs.",
+                        "C": "One eigenvalue is positive and real, another is zero.",
+                        "D": "One eigenvalue is non-negative, another is negative."
+                    },
+                    answer: "B",
+                    explanation: "The characteristic equation is $$\\lambda^2 - \\text{Trace}(M)\\lambda + \\det(M) = 0$$. Trace = 3, Det = 5. So, $$\\lambda^2 - 3\\lambda + 5 = 0$$. The discriminant is $$9 - 20 = -11 < 0$$, meaning roots are complex conjugate pairs."
+                }
+            ],
+            "Calculus and Optimization": [
+                {
+                    year: "GATE DA 2024",
+                    question: "For any twice differentiable function f:R→R, if at some x* in R, f'(x*) = 0 and f''(x*) > 0, then the function f necessarily has a ___ at x = x*.",
+                    options: { "A": "local minimum", "B": "global minimum", "C": "local maximum", "D": "global maximum" },
+                    answer: "A",
+                    explanation: "By the second derivative test, a critical point ($$f'(x) = 0$$) where the second derivative is strictly positive ($$f''(x) > 0$$) indicates a local minimum."
+                }
+            ],
+            "Programming, Data Structures and Algorithms": [
+                {
+                    year: "GATE CS",
+                    question: "You have an array of n elements. Suppose you implement quick sort by always choosing the central element of the array as the pivot. What is the tightest upper bound for the worst-case performance?",
+                    options: { "A": "O(n log n)", "B": "O(n^2)", "C": "O(n^3)", "D": "O(n)" },
+                    answer: "B",
+                    explanation: "Regardless of whether you pick the first, last, or central element as the pivot in a standard Quick Sort, there is always a specific input permutation (e.g., an array already sorted in a specific way) that will cause the pivot to consistently result in highly unbalanced partitions (e.g., sizes 0 and n-1). Thus, the worst-case time complexity remains $$O(n^2)$$."
+                },
+                {
+                    year: "GATE CS 2026",
+                    question: "Assume that the pivot element in QuickSort is chosen uniformly at random from an array of 25 distinct elements. What is the probability that the pivot gets placed in the worst possible location in the first round of partitioning?",
+                    options: { "A": "0.04", "B": "0.08", "C": "0.50", "D": "0.16" },
+                    answer: "B",
+                    explanation: "The worst-case partition occurs when the randomly selected pivot happens to be either the absolute minimum or the absolute maximum element in the array. Since there are 25 elements, there are 2 such 'worst' choices. Probability = $$2/25 = 0.08$$."
+                },
+                {
+                    year: "GATE CS 2026",
+                    question: "Consider an array A of size n. An algorithm needs to verify if for all i > j, (A[i+1] - A[i]) > (A[j+1] - A[j]). What is the Time complexity of the fastest algorithm to achieve this?",
+                    options: { "A": "Θ(n)", "B": "Θ(n^2)", "C": "Θ(n log n)", "D": "Θ(log n)" },
+                    answer: "A",
+                    explanation: "This condition requires the sequence of differences between adjacent elements to be strictly increasing. By iterating through the array once (calculating differences and comparing with the previous difference), you touch every element. Time complexity is $$Θ(n)$$."
+                }
+            ],
+            "Database Management and Warehousing": [
+                {
+                    year: "GATE CS 2018",
+                    question: "Consider relations r(A, B) and s(B, C), where s.B is a primary key and r.B is a foreign key referencing s.B. Let LOJ denote the natural left outer-join. Which of the following is NOT equivalent to r ⋈ (σ_{B<5}(s))?",
+                    options: {
+                        "A": "σ_{B<5}(r ⋈ s)",
+                        "B": "σ_{B<5}(r LOJ s)",
+                        "C": "r LOJ (σ_{B<5}(s))",
+                        "D": "σ_{B<5}(r) LOJ s"
+                    },
+                    answer: "C",
+                    explanation: "Because r LOJ (σ_{B<5}(s)) will return ALL tuples from r, even those where B is not < 5 (padding them with NULLs for C). The original natural join query only returns tuples where B < 5. Therefore, option C is not equivalent."
+                }
+            ],
+            "Machine Learning": [
+                {
+                    year: "GATE DA 2026",
+                    question: "Which of the following statements is true for Ridge Regression?",
+                    options: {
+                        "A": "It guards against scenarios where the model works well for test data, but poorly for training data.",
+                        "B": "The regularizer uses L1 norm.",
+                        "C": "It aims to reduce the number of parameters with negative values.",
+                        "D": "It may increase model bias, but helps reduce the variance in predictions."
+                    },
+                    answer: "D",
+                    explanation: "Ridge regression applies an L2 penalty. This shrinks coefficients, inherently introducing a small amount of bias into the model's predictions, but it significantly reduces the overall variance, protecting against overfitting."
+                }
+            ],
+            "Artificial Intelligence": [
+                {
+                    year: "GATE DA 2025",
+                    question: "Which of the following statements is correct regarding inference algorithms in a Bayesian network?",
+                    options: {
+                        "A": "Variable elimination is an approximate inference algorithm",
+                        "B": "Gibbs sampling is an exact inference algorithm",
+                        "C": "Rejection sampling is an approximate inference algorithm",
+                        "D": "Variable elimination cannot determine conditional probabilities"
+                    },
+                    answer: "C",
+                    explanation: "Rejection sampling and Gibbs sampling rely on generating random samples to estimate distributions, making them approximate inference algorithms. Variable elimination mathematically calculates exact probabilities."
+                }
+            ]
+        };
+
+        // App State
+        let currentTopic = null;
+        let currentQuestionIndex = 0;
+        let hasAnsweredCurrent = false;
+        let questionDB = JSON.parse(JSON.stringify(defaultQuestionDB));
+
+        // If an external question bank is provided, merge it (extraQuestionDB)
+        function mergeExternalBank() {
+            if (window.extraQuestionDB) {
+                Object.entries(window.extraQuestionDB).forEach(([topic, questions]) => {
+                    if (!questionDB[topic]) questionDB[topic] = [];
+                    // avoid exact duplicates by question text
+                    const existing = new Set(questionDB[topic].map(q => q.question));
+                    questions.forEach(q => { if (!existing.has(q.question)) questionDB[topic].push(q); });
+                });
+            }
+        }
+
+        // DOM Elements
+        const topicList = document.getElementById('topic-list');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const topicTitle = document.getElementById('current-topic-title');
+        const questionCounter = document.getElementById('question-counter');
+        const yearBadge = document.getElementById('year-badge');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const feedbackTitle = document.getElementById('feedback-title');
+        const explanationText = document.getElementById('explanation-text');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        // Manual question form elements
+        const manualTopicSelect = document.getElementById('manual-topic');
+        const manualQuestionInput = document.getElementById('manual-question');
+        const manualYearInput = document.getElementById('manual-year');
+        const optAInput = document.getElementById('opt-A');
+        const optBInput = document.getElementById('opt-B');
+        const optCInput = document.getElementById('opt-C');
+        const optDInput = document.getElementById('opt-D');
+        const manualCorrectSelect = document.getElementById('manual-correct');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const manualStatus = document.getElementById('manual-status');
+
+        function init() {
+            // Merge external bank if available, then render topics
+            mergeExternalBank();
+            renderTopics();
+
+            // populate manual topic select
+            manualTopicSelect.innerHTML = '';
+            Object.keys(questionDB).forEach(topic => {
+                const opt = document.createElement('option');
+                opt.value = topic;
+                opt.textContent = topic;
+                manualTopicSelect.appendChild(opt);
+            });
+
+            analyzeBtn.onclick = () => {
+                const topic = manualTopicSelect.value || Object.keys(questionDB)[0];
+                const qtext = (manualQuestionInput.value || '').trim();
+                if (!qtext) {
+                    manualStatus.textContent = 'Please enter a question to analyze.';
+                    manualStatus.className = 'mt-2 text-xs text-red-600';
+                    return;
+                }
+                manualStatus.className = 'mt-2 text-xs text-blue-600';
+                const analysis = analyzeQuestion(qtext, topic);
+                // fill options if empty
+                if (!optAInput.value && !optBInput.value && !optCInput.value && !optDInput.value) {
+                    const opts = analysis.generatedOptions || {};
+                    optAInput.value = opts.A || '';
+                    optBInput.value = opts.B || '';
+                    optCInput.value = opts.C || '';
+                    optDInput.value = opts.D || '';
+                }
+                manualStatus.innerHTML = `<strong>Explanation:</strong> ${analysis.explanation}`;
+                if (window.MathJax) MathJax.typesetPromise();
+            };
+
+            addQuestionBtn.onclick = () => {
+                const topic = manualTopicSelect.value || Object.keys(questionDB)[0];
+                const qtext = (manualQuestionInput.value || '').trim();
+                if (!qtext) {
+                    manualStatus.textContent = 'Please enter a question before adding.';
+                    manualStatus.className = 'mt-2 text-xs text-red-600';
+                    return;
+                }
+                const year = (manualYearInput.value || 'Practice').trim();
+                const options = {
+                    A: optAInput.value.trim() || 'Option A',
+                    B: optBInput.value.trim() || 'Option B',
+                    C: optCInput.value.trim() || 'Option C',
+                    D: optDInput.value.trim() || 'Option D'
+                };
+                const answer = manualCorrectSelect.value || 'A';
+                let explanation = manualStatus.innerText && manualStatus.innerText.replace('Explanation:', '').trim();
+                if (!explanation) {
+                    explanation = analyzeQuestion(qtext, topic).explanation;
+                }
+
+                const newQ = { year, question: qtext, options, answer, explanation };
+                if (!questionDB[topic]) questionDB[topic] = [];
+                questionDB[topic].push(newQ);
+                renderTopics();
+                manualStatus.textContent = `Question added to ${topic}.`;
+                manualStatus.className = 'mt-2 text-xs text-green-600';
+                // clear inputs for next question
+                manualQuestionInput.value = '';
+                manualYearInput.value = '';
+                optAInput.value = optBInput.value = optCInput.value = optDInput.value = '';
+            };
+        }
+
+        function renderTopics() {
+            topicList.innerHTML = '';
+            Object.keys(questionDB).forEach(topic => {
+                const li = document.createElement('li');
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left px-4 py-2 rounded-md hover:bg-blue-50 focus:bg-blue-100 text-gray-700 transition';
+                btn.innerHTML = `${topic} <span class="float-right text-xs bg-gray-200 px-2 py-1 rounded-full">${questionDB[topic].length}</span>`;
+                btn.onclick = () => loadTopic(topic);
+                li.appendChild(btn);
+                topicList.appendChild(li);
+            });
+        }
+
+        function mergeUploadedQuestions(uploadedQuestionsByTopic) {
+            Object.entries(uploadedQuestionsByTopic).forEach(([topic, questions]) => {
+                if (!questionDB[topic]) {
+                    questionDB[topic] = [];
+                }
+                questionDB[topic] = questionDB[topic].concat(questions);
+            });
+            renderTopics();
+            const firstTopic = Object.keys(questionDB)[0];
+            if (firstTopic) {
+                loadTopic(firstTopic);
+            }
+        }
+
+        async function extractQuestionsFromPdf(file) {
+            if (!window.pdfjsLib) {
+                throw new Error('PDF.js is unavailable.');
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+
+            // Try normal parsing first, then try disabling the worker if there are issues.
+            let lastError = null;
+            try {
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const text = await extractTextFromPdfObject(pdf);
+                return parseQuestionsFromText(text);
+            } catch (err) {
+                lastError = err;
+                console.warn('Standard PDF parsing failed, retrying with disableWorker:', err && err.message);
+            }
+
+            try {
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer, disableWorker: true }).promise;
+                const text = await extractTextFromPdfObject(pdf);
+                return parseQuestionsFromText(text);
+            } catch (err) {
+                lastError = err;
+                console.warn('PDF parsing with disableWorker failed:', err && err.message);
+            }
+
+            // Last-resort crude text decode fallback: try to decode raw bytes to UTF-8/Latin1 and parse.
+            try {
+                const utf8 = tryDecodeArrayBuffer(arrayBuffer, 'utf-8');
+                const asciiCandidate = utf8.replace(/\s+/g, ' ').trim();
+                if (asciiCandidate.length > 50) {
+                    return parseQuestionsFromText(asciiCandidate);
+                }
+                const latin1 = tryDecodeArrayBuffer(arrayBuffer, 'latin1');
+                if (latin1 && latin1.length > 50) {
+                    return parseQuestionsFromText(latin1);
+                }
+            } catch (err) {
+                console.warn('Raw decode fallback failed:', err && err.message);
+            }
+
+            // If all attempts fail, throw the last error for upstream handling
+            throw lastError || new Error('Unable to extract text from PDF.');
+        }
+
+        async function extractTextFromPdfObject(pdf) {
+            let textContent = '';
+            for (let pageIndex = 1; pageIndex <= pdf.numPages; pageIndex += 1) {
+                const page = await pdf.getPage(pageIndex);
+                const pageText = await page.getTextContent();
+                const pageStrings = pageText.items.map(item => item.str).join(' ');
+                textContent += `\n${pageStrings}`;
+            }
+            return textContent;
+        }
+
+        function tryDecodeArrayBuffer(arrayBuffer, encoding) {
+            try {
+                if (typeof TextDecoder !== 'undefined') {
+                    return new TextDecoder(encoding).decode(new Uint8Array(arrayBuffer));
+                }
+                return new Buffer.from(arrayBuffer).toString(encoding);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function (s) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[s];
+            });
+        }
+
+        function parseQuestionsFromText(rawText) {
+            const knownTopics = [
+                'Probability and Statistics',
+                'Linear Algebra',
+                'Calculus and Optimization',
+                'Programming, Data Structures and Algorithms',
+                'Database Management and Warehousing',
+                'Machine Learning',
+                'Artificial Intelligence'
+            ];
+
+            const sections = [];
+            const lines = rawText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            let currentTopic = 'Uploaded Questions';
+            let currentLines = [];
+
+            function looksLikeTopic(line) {
+                const cleaned = line.replace(/^[-*•0-9.()\s]+/, '').trim();
+                const lower = cleaned.toLowerCase();
+                if (!cleaned || cleaned.length > 60 || /[?]/.test(cleaned)) {
+                    return false;
+                }
+                return knownTopics.some(topic => lower.includes(topic.toLowerCase())) || /^[A-Z][A-Za-z &/()-]+$/.test(cleaned);
+            }
+
+            lines.forEach(line => {
+                if (looksLikeTopic(line)) {
+                    if (currentLines.length) {
+                        sections.push({ topic: currentTopic, content: currentLines.join('\n') });
+                    }
+                    currentTopic = line.replace(/^[-*•0-9.()\s]+/, '').trim() || 'Uploaded Questions';
+                    currentLines = [];
+                } else {
+                    currentLines.push(line);
+                }
+            });
+
+            if (currentLines.length) {
+                sections.push({ topic: currentTopic, content: currentLines.join('\n') });
+            }
+
+            if (!sections.length) {
+                sections.push({ topic: 'Uploaded Questions', content: rawText });
+            }
+
+            const groupedQuestions = {};
+            sections.forEach(({ topic, content }) => {
+                const resolvedTopic = classifyTopic(topic, content, knownTopics);
+                const questions = parseSectionIntoQuestions(content, resolvedTopic);
+                if (questions.length) {
+                    if (!groupedQuestions[resolvedTopic]) {
+                        groupedQuestions[resolvedTopic] = [];
+                    }
+                    groupedQuestions[resolvedTopic] = groupedQuestions[resolvedTopic].concat(questions);
+                }
+            });
+
+            return groupedQuestions;
+        }
+
+        function classifyTopic(topic, content, knownTopics) {
+            const haystack = `${topic}\n${content}`.toLowerCase();
+            const match = knownTopics.find(candidate => haystack.includes(candidate.toLowerCase()));
+            return match || topic || 'Uploaded Questions';
+        }
+
+        function parseSectionIntoQuestions(content, topic) {
+            const lines = content.split(/\n+/).map(line => line.trim()).filter(Boolean);
+            const blocks = [];
+            let currentBlock = [];
+
+            lines.forEach(line => {
+                const isQuestionBoundary = /^(Q|Question)\s*\d+/i.test(line) || /\?$/.test(line) || /^\d+\./.test(line);
+                if (currentBlock.length && isQuestionBoundary && currentBlock.some(part => /\?/.test(part))) {
+                    blocks.push(currentBlock.join(' '));
+                    currentBlock = [line];
+                } else {
+                    currentBlock.push(line);
+                }
+            });
+
+            if (currentBlock.length) {
+                blocks.push(currentBlock.join(' '));
+            }
+
+            if (!blocks.length) {
+                blocks.push(content);
+            }
+
+            return blocks.map((block, index) => buildQuestionFromBlock(block, topic, index)).filter(Boolean);
+        }
+
+        function buildQuestionFromBlock(block, topic, index) {
+            const normalizedBlock = block.replace(/\s+/g, ' ').trim();
+            if (!normalizedBlock) {
+                return null;
+            }
+
+            const lines = normalizedBlock.split(/\s(?=[A-D](?:\)|\.|:))/).map(line => line.trim()).filter(Boolean);
+            let questionText = normalizedBlock;
+            const options = {};
+            let answer = null;
+            let explanation = null;
+
+            lines.forEach(line => {
+                const optionMatch = line.match(/^([A-D])(?:\)|\.|:)(.+)$/);
+                if (optionMatch) {
+                    options[optionMatch[1]] = optionMatch[2].trim();
+                    return;
+                }
+
+                if (/answer/i.test(line)) {
+                    const ansMatch = line.match(/([A-D])/i);
+                    if (ansMatch) answer = ansMatch[1].toUpperCase();
+                    return;
+                }
+
+                if (/explanation|solution|reason/i.test(line)) {
+                    explanation = line.replace(/^.*?(explanation|solution|reason)[:\-]\s*/i, '').trim();
+                    return;
+                }
+
+                if (!questionText.includes(line)) {
+                    questionText = line;
+                }
+            });
+
+            if (!questionText || questionText.length < 8) {
+                questionText = normalizedBlock;
+            }
+
+            if (Object.keys(options).length === 0) {
+                ['A', 'B', 'C', 'D'].forEach((optionKey, optionIndex) => {
+                    options[optionKey] = `Option ${optionIndex + 1}`;
+                });
+            }
+
+            if (!answer) {
+                answer = Object.keys(options)[0] || 'A';
+            }
+
+            if (!explanation) {
+                explanation = buildTopicExplanation(topic, questionText);
+            }
+
+            return {
+                year: 'Uploaded PDF',
+                question: questionText,
+                options,
+                answer,
+                explanation
+            };
+        }
+
+        function buildTopicExplanation(topic, questionText) {
+            const lowerTopic = topic.toLowerCase();
+            if (lowerTopic.includes('linear algebra')) {
+                return `This belongs to ${topic}. Review the core linear algebra idea behind the question, especially matrix properties, determinants, eigenvalues, or systems of equations.`;
+            }
+            if (lowerTopic.includes('calculus')) {
+                return `This belongs to ${topic}. Focus on the relevant derivative, integral, or optimization concept that governs the statement in the question.`;
+            }
+            if (lowerTopic.includes('programming') || lowerTopic.includes('algorithm')) {
+                return `This belongs to ${topic}. Analyze the algorithmic pattern, time complexity, or data structure behavior described in the question.`;
+            }
+            if (lowerTopic.includes('database')) {
+                return `This belongs to ${topic}. Use the relational algebra, join semantics, or database constraint rules relevant to the question.`;
+            }
+            if (lowerTopic.includes('machine learning')) {
+                return `This belongs to ${topic}. Connect the problem to the evaluation metric, regularization, or learning principle behind the topic.`;
+            }
+            if (lowerTopic.includes('artificial intelligence')) {
+                return `This belongs to ${topic}. Interpret the question through the appropriate search, reasoning, or probabilistic inference concept.`;
+            }
+            return `This question is grouped under ${topic}. Use the key concept from that topic to reason through the answer and interpret the explanation.`;
+        }
+
+        // Basic question analyzer — produces a human-readable explanation and optional generated options
+        function analyzeQuestion(questionText, topic) {
+            const base = buildTopicExplanation(topic, questionText);
+            const lower = questionText.toLowerCase();
+            let explanation = `${base} `;
+
+            // Simple heuristics to expand explanation
+            if (topic.toLowerCase().includes('linear algebra')) {
+                if (/determinant|det|eigenvalue|eigenvector|trace/.test(lower)) {
+                    explanation += 'Identify matrices and use determinant/eigenvalue properties; consider characteristic polynomial or row-reduction where appropriate.';
+                } else {
+                    explanation += 'Try reducing to a standard linear algebra operation: row-reduction, eigen decomposition, or checking rank.';
+                }
+            } else if (topic.toLowerCase().includes('probability')) {
+                if (/binomial|poisson|normal|exponential|cdf|pdf/.test(lower)) {
+                    explanation += 'Recognize the distribution mentioned, write its PMF/PDF, and compute the required probability by summing or integrating as needed.';
+                } else {
+                    explanation += 'Define the sample space, identify independence or conditional probabilities, and apply counting or basic probability rules.';
+                }
+            } else if (topic.toLowerCase().includes('calculus') || topic.toLowerCase().includes('optimization')) {
+                if (/derivative|differentiat|gradient|hessian/.test(lower)) {
+                    explanation += 'Compute the derivative or gradient, check critical points, and use second-derivative (or Hessian) tests to classify them.';
+                } else {
+                    explanation += 'Translate the problem into an optimization objective; compute derivatives and check convexity when possible.';
+                }
+            } else if (topic.toLowerCase().includes('programming') || topic.toLowerCase().includes('algorithm')) {
+                if (/time|complexity|big[- ]?o/.test(lower)) {
+                    explanation += 'Identify the algorithmic steps, count operations in terms of n, and derive tight asymptotic bounds (worst/average case).';
+                } else {
+                    explanation += 'Break the problem into data-structure operations and consider edge cases; sketch an algorithm and analyze its complexity.';
+                }
+            } else if (topic.toLowerCase().includes('database')) {
+                explanation += 'Map the question to relational algebra or schema constraints; consider keys, joins, and normalization implications.';
+            } else if (topic.toLowerCase().includes('machine learning')) {
+                explanation += 'Relate the question to model choice, bias-variance, regularization, and typical evaluation metrics.';
+            } else if (topic.toLowerCase().includes('artificial intelligence')) {
+                explanation += 'Frame the problem as search, planning, or probabilistic inference depending on clues; consider admissible heuristics if applicable.';
+            } else {
+                explanation += 'Identify the core mathematical or algorithmic principle and apply it step by step, showing intermediate calculations.';
+            }
+
+            // Generate simple distractor options if needed
+            const generatedOptions = {
+                A: 'Correct answer (see explanation)',
+                B: 'Plausible distractor — common mistake',
+                C: 'Another plausible distractor',
+                D: 'None of the above / alternative' 
+            };
+
+            return { explanation, generatedOptions };
+        }
+
+        function loadTopic(topic) {
+            currentTopic = topic;
+            currentQuestionIndex = 0;
+            welcomeScreen.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            topicTitle.textContent = topic;
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            hasAnsweredCurrent = false;
+            const qData = questionDB[currentTopic][currentQuestionIndex];
+            const totalQ = questionDB[currentTopic].length;
+
+            questionCounter.textContent = `Q ${currentQuestionIndex + 1} / ${totalQ}`;
+            yearBadge.textContent = qData.year;
+            questionText.innerHTML = qData.question;
+
+            optionsContainer.innerHTML = '';
+            feedbackContainer.classList.add('hidden');
+
+            Object.entries(qData.options).forEach(([key, value]) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-3 border rounded-md transition duration-200 flex items-start gap-3';
+                btn.innerHTML = `<span class="font-bold border border-gray-400 rounded px-2 bg-gray-100">${key}</span> <span>${value}</span>`;
+                btn.onclick = () => handleAnswer(key, btn, qData);
+                optionsContainer.appendChild(btn);
+            });
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.disabled = currentQuestionIndex === totalQ - 1;
+
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        function handleAnswer(selectedKey, buttonElement, qData) {
+            if (hasAnsweredCurrent) return;
+            hasAnsweredCurrent = true;
+
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedKey === qData.answer) {
+                buttonElement.classList.add('correct');
+                feedbackTitle.textContent = '✅ Correct!';
+                feedbackTitle.className = 'font-bold mb-2 text-green-700';
+                feedbackContainer.className = 'p-4 rounded-md border mb-6 bg-green-50 border-green-200';
+            } else {
+                buttonElement.classList.add('incorrect');
+
+                buttons.forEach(btn => {
+                    if (btn.innerHTML.includes(`>${qData.answer}<`)) {
+                        btn.classList.add('correct');
+                    }
+                });
+
+                feedbackTitle.textContent = '❌ Incorrect';
+                feedbackTitle.className = 'font-bold mb-2 text-red-700';
+                feedbackContainer.className = 'p-4 rounded-md border mb-6 bg-red-50 border-red-200';
+            }
+
+            explanationText.innerHTML = `<strong>Explanation:</strong> ${qData.explanation}`;
+            feedbackContainer.classList.remove('hidden');
+
+            if (window.MathJax) MathJax.typesetPromise();
+        }
+
+        prevBtn.onclick = () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex -= 1;
+                renderQuestion();
+            }
+        };
+
+        nextBtn.onclick = () => {
+            if (currentTopic && currentQuestionIndex < questionDB[currentTopic].length - 1) {
+                currentQuestionIndex += 1;
+                renderQuestion();
+            }
+        };
+
+        // Load external question bank script if present, then initialize.
+        (function loadExternalBankAndInit(){
+            const script = document.createElement('script');
+            script.src = './questions_bank.js';
+            script.onload = () => { init(); };
+            script.onerror = () => { init(); };
+            document.head.appendChild(script);
+        })();
+    </script>
+</body>
+</html>
